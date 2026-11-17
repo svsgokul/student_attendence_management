@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Attendance System</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2457a6;
+        }
+
+        p {
+            text-align: center;
+            color: gray;
+        }
+
+        .form {
+            display: flex;
+            gap: 10px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+
+        input {
+            padding: 12px;
+            flex: 1;
+            min-width: 150px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            border: none;
+            background: #2457a6;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 2px;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .summary {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            flex: 1;
+            min-width: 100px;
+            background: #e1edff;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background: #2457a6;
+            color: white;
+        }
+
+        .delete {
+            background: #e53935;
+        }
+
+        @media(max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Student Attendance System</h1>
+    <p>Manage Student Attendance Easily</p>
+
+    <div class="form">
+
+        <input type="text" id="name"
+        placeholder="Enter Student Name">
+
+        <input type="text" id="reg"
+        placeholder="Enter Register Number">
+
+        <button onclick="addStudent()">
+            Add Student
+        </button>
+
+    </div>
+
+    <div class="summary">
+
+        <div class="box">
+            <h3>Total Students</h3>
+            <h2 id="total">0</h2>
+        </div>
+
+        <div class="box">
+            <h3>Present</h3>
+            <h2 id="present">0</h2>
+        </div>
+
+        <div class="box">
+            <h3>Absent</h3>
+            <h2 id="absent">0</h2>
+        </div>
+
+    </div>
+
+    <h2>Attendance List</h2>
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Register No</th>
+                <th>Status</th>
+                <th>Percentage</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="studentList"></tbody>
+
+    </table>
+
+</div>
+
+<script>
+
+    let students = [];
+
+    function addStudent() {
+
+        let name = document.getElementById("name").value.trim();
+        let reg = document.getElementById("reg").value.trim();
+
+        if (name === "" || reg === "") {
+            alert("Please enter all details");
+            return;
+        }
+
+        let student = {
+            name: name,
+            reg: reg,
+            status: "Not Marked",
+            percentage: 0,
+            totalDays: 0,
+            presentDays: 0
+        };
+
+        students.push(student);
+
+        document.getElementById("name").value = "";
+        document.getElementById("reg").value = "";
+
+        displayStudents();
+    }
+
+    function markAttendance(index, status) {
+
+        let student = students[index];
+
+        student.totalDays++;
+
+        if (status === "Present") {
+            student.presentDays++;
+        }
+
+        student.percentage =
+            (student.presentDays / student.totalDays) * 100;
+
+        student.status = status;
+
+        displayStudents();
+    }
+
+    function deleteStudent(index) {
+
+        students.splice(index, 1);
+
+        displayStudents();
+    }
+
+    function displayStudents() {
+
+        let list = document.getElementById("studentList");
+
+        list.innerHTML = "";
+
+        let presentCount = 0;
+        let absentCount = 0;
+
+        students.forEach(function(student, index) {
+
+            if (student.status === "Present") {
+                presentCount++;
+            }
+
+            if (student.status === "Absent") {
+                absentCount++;
+            }
+
+            let row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td></td>
+                <td></td>
+                <td>
+                    ${student.status}<br><br>
+                    <button class="present">Present</button>
+                    <button class="absent">Absent</button>
+                </td>
+                <td>${student.percentage.toFixed(1)}%</td>
+                <td>
+                    <button class="delete">Delete</button>
+                </td>
+            `;
+
+            row.cells[0].textContent = student.name;
+            row.cells[1].textContent = student.reg;
+
+            row.querySelector(".present").onclick = function() {
+                markAttendance(index, "Present");
+            };
+
+            row.querySelector(".absent").onclick = function() {
+                markAttendance(index, "Absent");
+            };
+
+            row.querySelector(".delete").onclick = function() {
+                deleteStudent(index);
+            };
+
+            list.appendChild(row);
+
+        });
+
+        document.getElementById("total").innerText = students.length;
+
+        document.getElementById("present").innerText = presentCount;
+
+        document.getElementById("absent").innerText = absentCount;
+    }
+
+</script>
+
+</body>
+</html>
